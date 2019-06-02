@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import mongoose from 'mongoose';
 import taskModel, { ITask, ICreateTaskInput } from '../models/task.model';
+import { ObjectId } from 'mongodb';
 
 export class TaskController {
 
@@ -36,7 +37,8 @@ export class TaskController {
 
     public async deleteTask(request: Request, responce: Response) {
         try {
-            await this._deleteTask(request.params.taskId);
+            const id = mongoose.Types.ObjectId(request.params.tasksId)
+            const res = await this._deleteTask(id);
             responce.status(200).send({ deleted: true });
         } catch (error) {
             responce.status(500).send(error);
@@ -59,7 +61,7 @@ export class TaskController {
         return await taskModel.findByIdAndUpdate({ _id: task._id }, { $set: task, useFindAndModify: false }).exec();
     }
 
-    private async _deleteTask(taskId: string): Promise<any> {
-        return await taskModel.deleteOne(taskId).exec();
+    private async _deleteTask(taskId: ObjectId): Promise<any> {
+        return await taskModel.findByIdAndDelete(taskId).exec();
     }
 }
